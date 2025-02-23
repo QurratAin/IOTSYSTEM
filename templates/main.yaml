@@ -2,7 +2,7 @@ Resources:
   TimestreamStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: timestream.yaml
+      TemplateURL: file://templates/timestream.yaml
       Parameters:
         DatabaseName: "SensorDataDB"
         TableName: "SensorDataTable"
@@ -10,7 +10,7 @@ Resources:
   IoTCoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: iot-core.yaml
+      TemplateURL: file://templates/iot-core.yaml
       Parameters:
         IoTRuleTopicName: "sdk/test/python"  # Topic name for IoT rules
         TimestreamDatabaseName: !GetAtt TimestreamStack.Outputs.TimestreamDatabaseName
@@ -21,7 +21,7 @@ Resources:
   IoTEventsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: iot-events.yaml
+      TemplateURL: file://templates/iot-events.yaml
       Parameters:
         EmailAddress: "your-email@example.com"  # Replace with your email address
         DetectorModelName: "Q_BasicEventModel"
@@ -31,12 +31,12 @@ Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: vpc.yaml
+      TemplateURL: file://templates/vpc.yaml
 
   EC2GrafanaStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ec2-grafana.yaml
+      TemplateURL: file://templates/ec2-grafana.yaml
       Parameters:
         PublicSubnetId: !GetAtt VPCStack.Outputs.PublicSubnet1Id
         ProjectSecurityGroup: !GetAtt VPCStack.Outputs.SecurityGroupId
