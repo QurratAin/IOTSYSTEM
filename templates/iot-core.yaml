@@ -1,0 +1,158 @@
+Parameters:
+  IoTRuleTopicName:
+    Type: String
+    Description: MQTT topic name for the IoT rule
+    Default: "sdk/test/python"
+  TimestreamDatabaseName:
+    Type: String
+    Description: Name of the Timestream database
+  TimestreamTableName:
+    Type: String
+    Description: Name of the Timestream table
+  TimestreamErrorLogTopicArn:
+    Type: String
+    Description: ARN of the SNS topic for Timestream errors
+
+Resources:
+  IoTCoreLogErrors:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: IoTCoreLogErrors
+
+  IoTCoreErrorLoggingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: iot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: IoTCoreErrorLoggingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:IoTCoreLogErrors
+
+  IoTRuleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: iot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: IoTEventsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iotevents:BatchPutMessage
+                  - iotevents:PutMessages
+                Resource: '*'
+
+  TopicRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: Q_SensorDataIngestionRule
+      TopicRulePayload:
+        Actions:
+          - IotEvents:
+              InputName: Q_SensorInputToIotEvents
+              RoleArn: !GetAtt IoTRuleRole.Arn
+              MessageId: ${newuuid()}
+              BatchMode: false
+        ErrorAction:
+          Sns:
+            TargetArn: !Ref IoTCoreLogErrors
+            RoleArn: !GetAtt IoTCoreErrorLoggingRole.Arn
+        RuleDisabled: false
+        Sql: !Sub |
+          SELECT * FROM '${IoTRuleTopicName}'
+
+  TimestreamRuleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: iot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: TimestreamPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - timestream:WriteRecords
+                Resource: !Sub arn:aws:timestream:${AWS::Region}:${AWS::AccountId}:database/${TimestreamDatabaseName}/table/${TimestreamTableName}
+
+  DBlogerrors:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: DBlogerrors
+
+  TimestreamErrorLoggingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: iot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: TimestreamErrorLoggingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:DBlogerrors
+
+  TimestreamTopicRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: Q_TimestreamIngestionRule
+      TopicRulePayload:
+        Actions:
+          - Timestream:
+              DatabaseName: !Ref TimestreamDatabaseName
+              TableName: !Ref TimestreamTableName
+              RoleArn: !GetAtt TimestreamRuleRole.Arn
+              Dimensions:
+                - Name: sensorid
+                  Value: ${sensorid}
+              Timestamp:
+                Value: ${timestamp}
+                Unit: MILLISECONDS
+        ErrorAction:
+          Sns:
+            TargetArn: !Ref TimestreamErrorLogTopicArn
+            RoleArn: !GetAtt TimestreamErrorLoggingRole.Arn
+        RuleDisabled: false
+        Sql: !Sub |
+          SELECT
+            temperatureInput.sensorData.temperature AS temperature,
+            temperatureInput.sensorData.pressure AS pressure
+          FROM
+            '${IoTRuleTopicName}'
+
+Outputs:
+  IoTCoreLogErrorsTopicArn:
+    Description: ARN of the SNS topic for IoT Core error logging
+    Value: !Ref IoTCoreLogErrors        

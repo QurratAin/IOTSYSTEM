@@ -1,0 +1,29 @@
+Parameters:
+  DatabaseName:
+    Type: String
+    Description: Name of the Timestream database
+    Default: SensorDataDB
+  TableName:
+    Type: String
+    Description: Name of the Timestream table
+    Default: SensorDataTable
+
+Resources:
+  TimestreamDatabase:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: !Ref DatabaseName
+
+  TimestreamTable:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TimestreamDatabase
+      TableName: !Ref TableName
+
+Outputs:
+  TimestreamDatabaseName:
+    Description: Name of the Timestream database
+    Value: !Ref TimestreamDatabase
+  TimestreamTableName:
+    Description: Name of the Timestream table
+    Value: !Ref TimestreamTable

@@ -1,0 +1,112 @@
+Parameters:
+  EmailAddress:
+    Type: String
+    Description: Email address for temperature alerts
+  DetectorModelName:
+    Type: String
+    Description: Name of the detector model
+    Default: Q_BasicEventModel
+  TemperatureThreshold:
+    Type: Number
+    Description: Temperature threshold for alerts
+    Default: 20.0
+
+Resources:
+  TemperatureAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: TemperatureAlert
+      Subscription:
+        - Endpoint: !Ref EmailAddress
+          Protocol: email
+
+  DetectorModelRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: iotevents.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: IoTEventsDetectorModelPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iotevents:BatchPutMessage
+                  - iotevents:PutMessages
+                  - sns:Publish
+                Resource: '*'
+
+  Input:
+    Type: AWS::IoTEvents::Input
+    Properties:
+      InputName: Q_SensorInputToIotEvents
+      InputDefinition:
+        Attributes:
+          - JsonPath: temperatureInput.sensorid
+          - JsonPath: temperatureInput.sensorData.temperature
+          - JsonPath: temperatureInput.sensorData.pressure
+
+  DetectorModel:
+    Type: AWS::IoTEvents::DetectorModel
+    Properties:
+      DetectorModelName: !Ref DetectorModelName
+      DetectorModelDefinition:
+        States:
+          - StateName: Normal
+            OnInput:
+              Events:
+                - EventName: gettemp
+                  Condition: 'true'
+                  Actions:
+                    - SetVariable:
+                        VariableName: previousTemp
+                        Value: $input.Q_SensorInputToIotEvents.temperatureInput.sensorData.temperature
+              TransitionEvents:
+                - EventName: TriggerAlert
+                  Condition: $input.Q_SensorInputToIotEvents.temperatureInput.sensorData.temperature
+                    > $variable.Threshold
+                  Actions:
+                    - Sns:
+                        TargetArn: !Ref TemperatureAlertTopic
+                  NextState: Temp_high
+            OnEnter:
+              Events:
+                - EventName: set
+                  Condition: 'true'
+                  Actions:
+                    - SetVariable:
+                        VariableName: Threshold
+                        Value: !Ref TemperatureThreshold
+            OnExit:
+              Events: []
+          - StateName: Temp_high
+            OnInput:
+              Events: []
+              TransitionEvents:
+                - EventName: timeroff
+                  Condition: (timeout("delay"))
+                  Actions: []
+                  NextState: Normal
+            OnEnter:
+              Events:
+                - EventName: setTimer
+                  Condition: 'true'
+                  Actions:
+                    - SetTimer:
+                        TimerName: delay
+                        Seconds: 120
+            OnExit:
+              Events: []
+        InitialStateName: Normal
+      RoleArn: !GetAtt DetectorModelRole.Arn
+
+Outputs:
+  DetectorModelArn:
+    Description: ARN of the detector model
+    Value: !Ref DetectorModel

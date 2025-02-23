@@ -1,0 +1,38 @@
+[
+  {
+    "ParameterKey": "IoTRuleTopicName",
+    "ParameterValue": "sdk/test/python"
+  },
+  {
+    "ParameterKey": "DatabaseName",
+    "ParameterValue": "SensorDataDB"
+  },
+  {
+    "ParameterKey": "TableName",
+    "ParameterValue": "SensorDataTable"
+  },
+  {
+    "ParameterKey": "EmailAddress",
+    "ParameterValue": "qurratulain.06@gmail.com"
+  },
+  {
+    "ParameterKey": "VPCCidrBlock",
+    "ParameterValue": "10.0.0.0/16"
+  },
+  {
+    "ParameterKey": "PublicSubnet1CidrBlock",
+    "ParameterValue": "10.0.1.0/24"
+  },
+  {
+    "ParameterKey": "PublicSubnet2CidrBlock",
+    "ParameterValue": "10.0.2.0/24"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "AMIId",
+    "ParameterValue": "ami-09e143e99e8fa74f9"
+  }
+]

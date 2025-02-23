@@ -1,0 +1,129 @@
+Parameters:
+  VPCCidrBlock:
+    Type: String
+    Description: CIDR block for the VPC
+    Default: 10.0.0.0/16
+  PublicSubnet1CidrBlock:
+    Type: String
+    Description: CIDR block for Public Subnet 1
+    Default: 10.0.1.0/24
+  PublicSubnet2CidrBlock:
+    Type: String
+    Description: CIDR block for Public Subnet 2
+    Default: 10.0.2.0/24
+
+Resources:
+  ProjectVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: ProjectVPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProjectVPC
+      CidrBlock: !Ref PublicSubnet1CidrBlock
+      AvailabilityZone: !Select
+        - '0'
+        - Fn::GetAZs: !Ref "AWS::Region"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet1
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ProjectVPC
+      CidrBlock: !Ref PublicSubnet2CidrBlock
+      AvailabilityZone: !Select
+        - '1'
+        - Fn::GetAZs: !Ref "AWS::Region"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2
+
+  ProjectInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ProjectInternetGateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ProjectVPC
+      InternetGatewayId: !Ref ProjectInternetGateway
+
+  ProjectRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ProjectVPC
+      Tags:
+        - Key: Name
+          Value: ProjectRouteTable
+
+  ProjectRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref ProjectRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref ProjectInternetGateway
+
+  ProjectSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref ProjectRouteTable
+
+  ProjectSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref ProjectRouteTable
+
+  ProjectSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and Grafana access
+      VpcId: !Ref ProjectVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0  
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: ProjectSecurityGroup
+Outputs:
+  VpcId:
+    Description: ID of the VPC
+    Value: !Ref ProjectVPC
+  PublicSubnet1Id:
+    Description: ID of Public Subnet 1
+    Value: !Ref PublicSubnet1
+  PublicSubnet2Id:
+    Description: ID of Public Subnet 2
+    Value: !Ref PublicSubnet2
+  SecurityGroupId:
+    Description: ID of the security group
+    Value: !Ref ProjectSecurityGroup          

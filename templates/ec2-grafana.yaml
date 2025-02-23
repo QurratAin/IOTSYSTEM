@@ -1,0 +1,71 @@
+Parameters:
+  InstanceTypeForEC2:
+    Type: String
+    Description: EC2 instance type
+    Default: t2.micro
+  AMIId:
+    Type:  AWS::EC2::Image::Id
+    Description: AMI ID for the EC2 instance
+    Default: ami-09e143e99e8fa74f9
+  PublicSubnetId:
+    Type: String
+    Description: Subnet ID for the EC2 instance
+  ProjectSecurityGroup:
+    Type: String
+    Description: Security group ID for the EC2 instance
+
+Resources:
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: KMSAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub ec2.${AWS::Region}.amazonaws.com
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2InstanceRole
+
+  ProjectGrafanaEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeForEC2
+      ImageId: !Ref AMIId
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      SecurityGroupIds:
+        - !Ref ProjectSecurityGroup
+      SubnetId: !Ref PublicSubnetId
+      UserData:
+        Fn::Base64:
+          "#!/bin/bash
+          ./scripts/configure-ec2.sh"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ProjectGrafanaEC2Instance"
+Outputs:
+  EC2InstanceId:
+    Description: ID of the EC2 instance
+    Value: !Ref ProjectGrafanaEC2Instance
+  EC2PublicIp:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt ProjectGrafanaEC2Instance.PublicIp          
