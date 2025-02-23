@@ -9,10 +9,7 @@ Parameters:
   TimestreamTableName:
     Type: String
     Description: Name of the Timestream table
-  TimestreamErrorLogTopicArn:
-    Type: String
-    Description: ARN of the SNS topic for Timestream errors
-
+    
 Resources:
   IoTCoreLogErrors:
     Type: AWS::SNS::Topic
@@ -142,7 +139,7 @@ Resources:
                 Unit: MILLISECONDS
         ErrorAction:
           Sns:
-            TargetArn: !Ref TimestreamErrorLogTopicArn
+            TargetArn: !Ref DBlogerrors
             RoleArn: !GetAtt TimestreamErrorLoggingRole.Arn
         RuleDisabled: false
         Sql: !Sub |

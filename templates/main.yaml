@@ -2,7 +2,7 @@ Resources:
   TimestreamStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: file://templates/timestream.yaml
+      TemplateURL: timestream.yaml
       Parameters:
         DatabaseName: "SensorDataDB"
         TableName: "SensorDataTable"
@@ -10,34 +10,31 @@ Resources:
   IoTCoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: file://templates/iot-core.yaml
+      TemplateURL: iot-core.yaml
       Parameters:
         IoTRuleTopicName: "sdk/test/python"  # Topic name for IoT rules
         TimestreamDatabaseName: !GetAtt TimestreamStack.Outputs.TimestreamDatabaseName
         TimestreamTableName: !GetAtt TimestreamStack.Outputs.TimestreamTableName
-        TimestreamErrorLogTopicArn: !GetAtt TimestreamStack.Outputs.TimestreamErrorLogTopicArn
-      DependsOn: TimestreamStack  # Ensure TimestreamStack is created first
-
+     
   IoTEventsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: file://templates/iot-events.yaml
+      TemplateURL: iot-events.yaml
       Parameters:
         EmailAddress: "your-email@example.com"  # Replace with your email address
         DetectorModelName: "Q_BasicEventModel"
         TemperatureThreshold: 20.0
-      DependsOn: IoTCoreStack  # Ensure IoTCoreStack is created first
-
+      
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: file://templates/vpc.yaml
+      TemplateURL: vpc.yaml
 
   EC2GrafanaStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: file://templates/ec2-grafana.yaml
+      TemplateURL: ec2-grafana.yaml
       Parameters:
         PublicSubnetId: !GetAtt VPCStack.Outputs.PublicSubnet1Id
         ProjectSecurityGroup: !GetAtt VPCStack.Outputs.SecurityGroupId
-      DependsOn: VPCStack  # Ensure VPCStack is created first
+      
