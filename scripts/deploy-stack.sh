@@ -6,22 +6,46 @@ STACK_NAME="IoTSystemStack"
 TEMPLATE_FILE="templates/main.yaml"
 PARAMETERS_FILE="parameters/dev-params.json"
 REGION="us-east-1"  # Change to your preferred region
+S3_BUCKET="iotsystemtemplates"  # Replace with your S3 bucket name
+PACKAGED_TEMPLATE="packaged-template.yaml"
 
-# Validate the CloudFormation template
-echo "Validating CloudFormation template..."
-aws cloudformation validate-template --template-body file://$TEMPLATE_FILE --region $REGION
+# Function to validate a CloudFormation template
+validate_template() {
+  local template_file=$1
+  echo "Validating CloudFormation template: $template_file..."
+  aws cloudformation validate-template --template-body file://$template_file --region $REGION
+
+  if [ $? -ne 0 ]; then
+    echo "Template validation failed for $template_file. Exiting."
+    exit 1
+  fi
+}
+
+# Validate all YAML files in the templates folder
+echo "Validating all YAML files in the templates folder..."
+for template in templates/*.yaml; do
+  validate_template "$template"
+done
+
+# Package the CloudFormation template
+echo "Packaging CloudFormation template..."
+aws cloudformation package \
+  --template-file $TEMPLATE_FILE \
+  --s3-bucket $S3_BUCKET \
+  --output-template-file $PACKAGED_TEMPLATE \
+  --region $REGION
 
 if [ $? -ne 0 ]; then
-  echo "Template validation failed. Exiting."
+  echo "Template packaging failed. Exiting."
   exit 1
 fi
 
 # Deploy the stack
 echo "Deploying CloudFormation stack..."
-aws cloudformation create-stack \
+aws cloudformation deploy \
+  --template-file $PACKAGED_TEMPLATE \
   --stack-name $STACK_NAME \
-  --template-body file://$TEMPLATE_FILE \
-  --parameters file://$PARAMETERS_FILE \
+  --parameter-overrides file://$PARAMETERS_FILE \
   --capabilities CAPABILITY_NAMED_IAM \
   --region $REGION
 
