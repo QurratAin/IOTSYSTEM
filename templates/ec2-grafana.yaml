@@ -6,7 +6,7 @@ Parameters:
   AMIId:
     Type:  AWS::EC2::Image::Id
     Description: AMI ID for the EC2 instance
-    Default: ami-09e143e99e8fa74f9
+    Default: ami-04b4f1a9cf54c11d0
   PublicSubnetId:
     Type: String
     Description: Subnet ID for the EC2 instance
@@ -66,6 +66,10 @@ Outputs:
   EC2InstanceId:
     Description: ID of the EC2 instance
     Value: !Ref ProjectGrafanaEC2Instance
+    Export:
+      Name: !Sub "${AWS::StackName}-EC2InstanceId"
   EC2PublicIp:
     Description: Public IP address of the EC2 instance
-    Value: !GetAtt ProjectGrafanaEC2Instance.PublicIp          
+    Value: !GetAtt ProjectGrafanaEC2Instance.PublicIp
+    Export:
+      Name: !Sub "${AWS::StackName}-EC2PublicIp"          

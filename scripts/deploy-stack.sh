@@ -4,7 +4,7 @@
 # Variables
 STACK_NAME="IoTSystemStack"
 TEMPLATE_FILE="templates/main.yaml"
-PARAMETERS_FILE="parameters/dev-parameters.json"
+PARAMETERS_FILE="config/dev-parameters.json"
 REGION="us-east-1"  # Change to your preferred region
 S3_BUCKET="iotsystemtemplates"  # Replace with your S3 bucket name
 PACKAGED_TEMPLATE="packaged-template.yaml"
@@ -33,7 +33,6 @@ aws cloudformation package \
   --template-file $TEMPLATE_FILE \
   --s3-bucket $S3_BUCKET \
   --output-template-file $PACKAGED_TEMPLATE \
-  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND\
   --region $REGION
 
 if [ $? -ne 0 ]; then

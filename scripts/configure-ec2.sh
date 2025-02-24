@@ -29,8 +29,8 @@ sudo systemctl start grafana-server
 sudo systemctl enable grafana-server
 
 # Optional: Install a Grafana plugin (e.g., AWS Timestream plugin)
-# echo "Installing Grafana AWS Timestream plugin..."
-# sudo grafana-cli plugins install grafana-timestream-datasource
+echo "Installing Grafana AWS Timestream plugin..."
+sudo grafana-cli plugins install grafana-timestream-datasource
 
 # Optional: Configure Grafana (e.g., set admin password)
 # echo "Setting Grafana admin password..."

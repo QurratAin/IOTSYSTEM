@@ -110,3 +110,5 @@ Outputs:
   DetectorModelArn:
     Description: ARN of the detector model
     Value: !Ref DetectorModel
+    Export:
+      Name: !Sub "${AWS::StackName}-DetectorModelArn"

@@ -13,8 +13,8 @@ Resources:
       TemplateURL: iot-core.yaml
       Parameters:
         IoTRuleTopicName: "sdk/test/python"  # Topic name for IoT rules
-        TimestreamDatabaseName: !GetAtt TimestreamStack.Outputs.TimestreamDatabaseName
-        TimestreamTableName: !GetAtt TimestreamStack.Outputs.TimestreamTableName
+        TimestreamDatabaseName: !ImportValue "TimestreamStack-TimestreamDatabaseName" 
+        TimestreamTableName: !ImportValue "TimestreamStack-TimestreamTableName"
      
   IoTEventsStack:
     Type: AWS::CloudFormation::Stack
@@ -35,6 +35,6 @@ Resources:
     Properties:
       TemplateURL: ec2-grafana.yaml
       Parameters:
-        PublicSubnetId: !GetAtt VPCStack.Outputs.PublicSubnet1Id
-        ProjectSecurityGroup: !GetAtt VPCStack.Outputs.SecurityGroupId
+        PublicSubnetId: !ImportValue "VPCStack-PublicSubnet1Id"
+        ProjectSecurityGroup: !ImportValue "VPCStack-SecurityGroupId"
       
