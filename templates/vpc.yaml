@@ -119,19 +119,19 @@ Outputs:
     Description: ID of the VPC
     Value: !Ref ProjectVPC
     Export:
-      Name: !Sub "${AWS::StackName}-VpcId"
+      Name: "VpcId"
   PublicSubnet1Id:
     Description: ID of Public Subnet 1
     Value: !Ref PublicSubnet1
     Export:
-      Name: !Sub "${AWS::StackName}-PublicSubnet1Id"
+      Name: "PublicSubnet1Id"
   PublicSubnet2Id:
     Description: ID of Public Subnet 2
     Value: !Ref PublicSubnet2
     Export:
-      Name: !Sub "${AWS::StackName}-PublicSubnet2Id"
+      Name: "PublicSubnet2Id"
   SecurityGroupId:
     Description: ID of the security group
     Value: !Ref ProjectSecurityGroup 
     Export:
-      Name: !Sub "${AWS::StackName}-SecurityGroupId"         
+      Name: "SecurityGroupId"         

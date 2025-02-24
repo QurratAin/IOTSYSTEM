@@ -56,20 +56,18 @@ Resources:
         - !Ref ProjectSecurityGroup
       SubnetId: !Ref PublicSubnetId
       UserData:
-        Fn::Base64:
-          "#!/bin/bash
-          ./scripts/configure-ec2.sh"
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-ProjectGrafanaEC2Instance"
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          ./scripts/configure-ec2.sh
+      
 Outputs:
   EC2InstanceId:
     Description: ID of the EC2 instance
     Value: !Ref ProjectGrafanaEC2Instance
     Export:
-      Name: !Sub "${AWS::StackName}-EC2InstanceId"
+      Name: "EC2InstanceId"
   EC2PublicIp:
     Description: Public IP address of the EC2 instance
     Value: !GetAtt ProjectGrafanaEC2Instance.PublicIp
     Export:
-      Name: !Sub "${AWS::StackName}-EC2PublicIp"          
+      Name: "EC2PublicIp"          

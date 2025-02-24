@@ -25,10 +25,10 @@ Outputs:
     Description: Name of the Timestream database
     Value: !Ref TimestreamDatabase
     Export:
-      Name: !Sub "${AWS::StackName}-TimestreamDataBaseName"
+      Name: "TimestreamDataBaseName"
 
   TimestreamTableName:
     Description: Name of the Timestream table
     Value: !Ref TimestreamTable
     Export:
-      Name: !Sub "${AWS::StackName}-TimestreamTableName"
+      Name: "TimestreamTableName"

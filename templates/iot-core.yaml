@@ -154,4 +154,4 @@ Outputs:
     Description: ARN of the SNS topic for IoT Core error logging
     Value: !Ref IoTCoreLogErrors  
     Export:
-      Name: !Sub "${AWS::StackName}-IoTCoreLogErrorsTopicArn"      
+      Name: "IoTCoreLogErrorsTopicArn"      
