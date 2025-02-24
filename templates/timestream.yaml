@@ -21,14 +21,14 @@ Resources:
       TableName: !Ref TableName
 
 Outputs:
-  TimestreamDatabaseName:
+  IotProjectDbName:
     Description: Name of the Timestream database
     Value: !Ref TimestreamDatabase
     Export:
-      Name: "TimestreamDataBaseName"
+      Name: "IotProjectDbName"
 
-  TimestreamTableName:
+  IotProjectTableName:
     Description: Name of the Timestream table
     Value: !Ref TimestreamTable
     Export:
-      Name: "TimestreamTableName"
+      Name: "IotProjectTableName"

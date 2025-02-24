@@ -14,9 +14,9 @@ Resources:
       Parameters:
         IoTRuleTopicName: "sdk/test/python"  # Topic name for IoT rules
         TimestreamDatabaseName: 
-          Fn::ImportValue: "TimestreamDatabaseName" 
+          Fn::ImportValue: "IotProjectDbName" 
         TimestreamTableName: 
-          Fn::ImportValue: "TimestreamTableName"
+          Fn::ImportValue: "IotProjectTableName"
      
   IoTEventsStack:
     Type: AWS::CloudFormation::Stack
@@ -38,7 +38,7 @@ Resources:
       TemplateURL: ec2-grafana.yaml
       Parameters:
         PublicSubnetId: 
-          Fn::ImportValue: "PublicSubnet1Id"
+          Fn::ImportValue: "IOTEC2PublicSubnet1Id"
         ProjectSecurityGroup: 
-          Fn::ImportValue: "SecurityGroupId"
+          Fn::ImportValue: "IOTEC2SecurityGroupId"
       
